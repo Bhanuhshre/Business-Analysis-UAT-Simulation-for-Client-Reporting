@@ -1,1 +1,78 @@
 
+"""
+Generates mock client account and transaction data used as the source
+input for the monthly client statement pipeline.
+
+Output:
+    mock_client_data.csv
+"""
+
+import csv
+import random
+from datetime import date, timedelta
+from faker import Faker
+
+fake = Faker()
+Faker.seed(42)
+random.seed(42)
+
+NUM_ACCOUNTS = 25
+STATEMENT_MONTH = date(2026, 6, 1)
+STATEMENT_MONTH_LABEL = "June 2026"
+
+TRANSACTION_TYPES = ["Deposit", "Withdrawal", "Fee", "Interest Credit", "Transfer"]
+
+rows = []
+
+for i in range(1, NUM_ACCOUNTS + 1):
+    account_id = f"ACC-{1000 + i}"
+    account_holder = fake.name()
+    is_closed = random.random() < 0.12  # ~12% of accounts are closed
+    opening_balance = round(random.uniform(500, 20000), 2)
+
+    num_transactions = 0 if is_closed else random.randint(3, 10)
+    running_balance = opening_balance
+
+    if num_transactions == 0:
+        rows.append({
+            "account_id": account_id,
+            "account_holder": account_holder,
+            "account_status": "Closed" if is_closed else "Active",
+            "statement_period": STATEMENT_MONTH_LABEL,
+            "transaction_date": "",
+            "transaction_type": "",
+            "transaction_amount": "",
+            "opening_balance": opening_balance,
+        })
+        continue
+
+    for _ in range(num_transactions):
+        txn_type = random.choice(TRANSACTION_TYPES)
+        if txn_type in ("Withdrawal", "Fee"):
+            amount = -round(random.uniform(10, 800), 2)
+        else:
+            amount = round(random.uniform(10, 1500), 2)
+
+        running_balance += amount
+        txn_date = STATEMENT_MONTH + timedelta(days=random.randint(0, 27))
+
+        rows.append({
+            "account_id": account_id,
+            "account_holder": account_holder,
+            "account_status": "Active",
+            "statement_period": STATEMENT_MONTH_LABEL,
+            "transaction_date": txn_date.isoformat(),
+            "transaction_type": txn_type,
+            "transaction_amount": amount,
+            "opening_balance": opening_balance,
+        })
+
+with open("mock_client_data.csv", "w", newline="") as f:
+    writer = csv.DictWriter(f, fieldnames=[
+        "account_id", "account_holder", "account_status", "statement_period",
+        "transaction_date", "transaction_type", "transaction_amount", "opening_balance"
+    ])
+    writer.writeheader()
+    writer.writerows(rows)
+
+print(f"Generated {len(rows)} rows across {NUM_ACCOUNTS} accounts -> mock_client_data.csv")
