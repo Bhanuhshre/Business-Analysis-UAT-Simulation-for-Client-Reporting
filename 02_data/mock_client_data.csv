@@ -1,78 +1,141 @@
-
-"""
-Generates mock client account and transaction data used as the source
-input for the monthly client statement pipeline.
-
-Output:
-    mock_client_data.csv
-"""
-
-import csv
-import random
-from datetime import date, timedelta
-from faker import Faker
-
-fake = Faker()
-Faker.seed(42)
-random.seed(42)
-
-NUM_ACCOUNTS = 25
-STATEMENT_MONTH = date(2026, 6, 1)
-STATEMENT_MONTH_LABEL = "June 2026"
-
-TRANSACTION_TYPES = ["Deposit", "Withdrawal", "Fee", "Interest Credit", "Transfer"]
-
-rows = []
-
-for i in range(1, NUM_ACCOUNTS + 1):
-    account_id = f"ACC-{1000 + i}"
-    account_holder = fake.name()
-    is_closed = random.random() < 0.12  # ~12% of accounts are closed
-    opening_balance = round(random.uniform(500, 20000), 2)
-
-    num_transactions = 0 if is_closed else random.randint(3, 10)
-    running_balance = opening_balance
-
-    if num_transactions == 0:
-        rows.append({
-            "account_id": account_id,
-            "account_holder": account_holder,
-            "account_status": "Closed" if is_closed else "Active",
-            "statement_period": STATEMENT_MONTH_LABEL,
-            "transaction_date": "",
-            "transaction_type": "",
-            "transaction_amount": "",
-            "opening_balance": opening_balance,
-        })
-        continue
-
-    for _ in range(num_transactions):
-        txn_type = random.choice(TRANSACTION_TYPES)
-        if txn_type in ("Withdrawal", "Fee"):
-            amount = -round(random.uniform(10, 800), 2)
-        else:
-            amount = round(random.uniform(10, 1500), 2)
-
-        running_balance += amount
-        txn_date = STATEMENT_MONTH + timedelta(days=random.randint(0, 27))
-
-        rows.append({
-            "account_id": account_id,
-            "account_holder": account_holder,
-            "account_status": "Active",
-            "statement_period": STATEMENT_MONTH_LABEL,
-            "transaction_date": txn_date.isoformat(),
-            "transaction_type": txn_type,
-            "transaction_amount": amount,
-            "opening_balance": opening_balance,
-        })
-
-with open("mock_client_data.csv", "w", newline="") as f:
-    writer = csv.DictWriter(f, fieldnames=[
-        "account_id", "account_holder", "account_status", "statement_period",
-        "transaction_date", "transaction_type", "transaction_amount", "opening_balance"
-    ])
-    writer.writeheader()
-    writer.writerows(rows)
-
-print(f"Generated {len(rows)} rows across {NUM_ACCOUNTS} accounts -> mock_client_data.csv")
+account_id,account_holder,account_status,statement_period,transaction_date,transaction_type,transaction_amount,opening_balance
+ACC-1001,Allison Hill,Active,June 2026,2026-06-24,Withdrawal,-186.34,987.71
+ACC-1001,Allison Hill,Active,June 2026,2026-06-18,Deposit,1018.28,987.71
+ACC-1001,Allison Hill,Active,June 2026,2026-06-02,Deposit,889.83,987.71
+ACC-1001,Allison Hill,Active,June 2026,2026-06-08,Deposit,149.61,987.71
+ACC-1001,Allison Hill,Active,June 2026,2026-06-18,Transfer,907.01,987.71
+ACC-1001,Allison Hill,Active,June 2026,2026-06-23,Withdrawal,-575.66,987.71
+ACC-1001,Allison Hill,Active,June 2026,2026-06-15,Transfer,635.08,987.71
+ACC-1002,Noah Rhodes,Active,June 2026,2026-06-11,Withdrawal,-561.53,16283.89
+ACC-1002,Noah Rhodes,Active,June 2026,2026-06-25,Fee,-132.83,16283.89
+ACC-1002,Noah Rhodes,Active,June 2026,2026-06-13,Fee,-90.75,16283.89
+ACC-1003,Angie Henderson,Closed,June 2026,,,,17026.14
+ACC-1004,Daniel Wagner,Active,June 2026,2026-06-13,Transfer,195.99,16239.0
+ACC-1004,Daniel Wagner,Active,June 2026,2026-06-27,Deposit,832.54,16239.0
+ACC-1004,Daniel Wagner,Active,June 2026,2026-06-12,Transfer,1329.32,16239.0
+ACC-1004,Daniel Wagner,Active,June 2026,2026-06-03,Transfer,296.51,16239.0
+ACC-1004,Daniel Wagner,Active,June 2026,2026-06-25,Deposit,995.28,16239.0
+ACC-1004,Daniel Wagner,Active,June 2026,2026-06-28,Fee,-788.33,16239.0
+ACC-1004,Daniel Wagner,Active,June 2026,2026-06-13,Withdrawal,-694.52,16239.0
+ACC-1004,Daniel Wagner,Active,June 2026,2026-06-27,Fee,-368.19,16239.0
+ACC-1004,Daniel Wagner,Active,June 2026,2026-06-12,Fee,-138.5,16239.0
+ACC-1004,Daniel Wagner,Active,June 2026,2026-06-23,Withdrawal,-539.44,16239.0
+ACC-1005,Cristian Santos,Active,June 2026,2026-06-06,Transfer,1096.4,13136.69
+ACC-1005,Cristian Santos,Active,June 2026,2026-06-21,Interest Credit,575.39,13136.69
+ACC-1005,Cristian Santos,Active,June 2026,2026-06-11,Transfer,337.23,13136.69
+ACC-1005,Cristian Santos,Active,June 2026,2026-06-02,Deposit,351.28,13136.69
+ACC-1005,Cristian Santos,Active,June 2026,2026-06-03,Fee,-326.92,13136.69
+ACC-1006,Connie Lawrence,Active,June 2026,2026-06-13,Withdrawal,-527.8,18886.74
+ACC-1006,Connie Lawrence,Active,June 2026,2026-06-05,Interest Credit,222.88,18886.74
+ACC-1006,Connie Lawrence,Active,June 2026,2026-06-18,Withdrawal,-598.54,18886.74
+ACC-1006,Connie Lawrence,Active,June 2026,2026-06-14,Fee,-600.14,18886.74
+ACC-1006,Connie Lawrence,Active,June 2026,2026-06-08,Transfer,605.11,18886.74
+ACC-1006,Connie Lawrence,Active,June 2026,2026-06-03,Withdrawal,-412.53,18886.74
+ACC-1006,Connie Lawrence,Active,June 2026,2026-06-05,Deposit,1293.04,18886.74
+ACC-1006,Connie Lawrence,Active,June 2026,2026-06-14,Withdrawal,-635.74,18886.74
+ACC-1007,Abigail Shaffer,Active,June 2026,2026-06-18,Transfer,384.61,8002.96
+ACC-1007,Abigail Shaffer,Active,June 2026,2026-06-04,Deposit,1023.62,8002.96
+ACC-1007,Abigail Shaffer,Active,June 2026,2026-06-25,Transfer,1128.81,8002.96
+ACC-1007,Abigail Shaffer,Active,June 2026,2026-06-14,Fee,-98.13,8002.96
+ACC-1007,Abigail Shaffer,Active,June 2026,2026-06-24,Withdrawal,-368.44,8002.96
+ACC-1007,Abigail Shaffer,Active,June 2026,2026-06-25,Fee,-777.79,8002.96
+ACC-1007,Abigail Shaffer,Active,June 2026,2026-06-04,Withdrawal,-411.07,8002.96
+ACC-1007,Abigail Shaffer,Active,June 2026,2026-06-17,Fee,-674.92,8002.96
+ACC-1007,Abigail Shaffer,Active,June 2026,2026-06-12,Transfer,306.38,8002.96
+ACC-1007,Abigail Shaffer,Active,June 2026,2026-06-25,Withdrawal,-436.11,8002.96
+ACC-1008,Gina Moore,Active,June 2026,2026-06-12,Interest Credit,39.02,18410.62
+ACC-1008,Gina Moore,Active,June 2026,2026-06-08,Fee,-199.17,18410.62
+ACC-1008,Gina Moore,Active,June 2026,2026-06-03,Transfer,1420.95,18410.62
+ACC-1008,Gina Moore,Active,June 2026,2026-06-25,Interest Credit,1225.87,18410.62
+ACC-1008,Gina Moore,Active,June 2026,2026-06-05,Transfer,1151.09,18410.62
+ACC-1008,Gina Moore,Active,June 2026,2026-06-06,Interest Credit,1420.8,18410.62
+ACC-1008,Gina Moore,Active,June 2026,2026-06-20,Fee,-426.86,18410.62
+ACC-1008,Gina Moore,Active,June 2026,2026-06-18,Interest Credit,1446.9,18410.62
+ACC-1009,Gabrielle Davis,Active,June 2026,2026-06-21,Interest Credit,1492.77,13952.42
+ACC-1009,Gabrielle Davis,Active,June 2026,2026-06-17,Fee,-356.1,13952.42
+ACC-1009,Gabrielle Davis,Active,June 2026,2026-06-08,Interest Credit,190.3,13952.42
+ACC-1009,Gabrielle Davis,Active,June 2026,2026-06-19,Deposit,513.75,13952.42
+ACC-1009,Gabrielle Davis,Active,June 2026,2026-06-08,Transfer,352.87,13952.42
+ACC-1009,Gabrielle Davis,Active,June 2026,2026-06-21,Deposit,115.78,13952.42
+ACC-1009,Gabrielle Davis,Active,June 2026,2026-06-02,Deposit,351.12,13952.42
+ACC-1010,Ryan Munoz,Active,June 2026,2026-06-07,Fee,-538.49,1881.72
+ACC-1010,Ryan Munoz,Active,June 2026,2026-06-19,Transfer,207.14,1881.72
+ACC-1010,Ryan Munoz,Active,June 2026,2026-06-26,Transfer,714.28,1881.72
+ACC-1010,Ryan Munoz,Active,June 2026,2026-06-07,Interest Credit,1213.17,1881.72
+ACC-1010,Ryan Munoz,Active,June 2026,2026-06-14,Deposit,154.43,1881.72
+ACC-1010,Ryan Munoz,Active,June 2026,2026-06-15,Fee,-344.63,1881.72
+ACC-1011,Monica Herrera,Active,June 2026,2026-06-11,Deposit,609.91,1556.34
+ACC-1011,Monica Herrera,Active,June 2026,2026-06-07,Deposit,380.5,1556.34
+ACC-1011,Monica Herrera,Active,June 2026,2026-06-14,Transfer,678.43,1556.34
+ACC-1011,Monica Herrera,Active,June 2026,2026-06-08,Withdrawal,-230.05,1556.34
+ACC-1012,Jamie Arnold,Active,June 2026,2026-06-18,Deposit,981.7,1970.01
+ACC-1012,Jamie Arnold,Active,June 2026,2026-06-25,Deposit,1453.8,1970.01
+ACC-1012,Jamie Arnold,Active,June 2026,2026-06-16,Withdrawal,-141.39,1970.01
+ACC-1012,Jamie Arnold,Active,June 2026,2026-06-13,Interest Credit,328.48,1970.01
+ACC-1013,Lisa Hensley,Active,June 2026,2026-06-26,Interest Credit,405.15,3710.42
+ACC-1013,Lisa Hensley,Active,June 2026,2026-06-23,Interest Credit,435.02,3710.42
+ACC-1013,Lisa Hensley,Active,June 2026,2026-06-16,Transfer,996.19,3710.42
+ACC-1014,Michele Williams,Active,June 2026,2026-06-02,Transfer,1106.25,6285.8
+ACC-1014,Michele Williams,Active,June 2026,2026-06-19,Fee,-55.16,6285.8
+ACC-1014,Michele Williams,Active,June 2026,2026-06-28,Interest Credit,759.25,6285.8
+ACC-1015,Dylan Miller,Active,June 2026,2026-06-03,Withdrawal,-64.13,1609.15
+ACC-1015,Dylan Miller,Active,June 2026,2026-06-19,Withdrawal,-328.98,1609.15
+ACC-1015,Dylan Miller,Active,June 2026,2026-06-02,Withdrawal,-467.35,1609.15
+ACC-1015,Dylan Miller,Active,June 2026,2026-06-22,Transfer,132.16,1609.15
+ACC-1016,Brian Ramirez,Active,June 2026,2026-06-11,Withdrawal,-539.08,10694.26
+ACC-1016,Brian Ramirez,Active,June 2026,2026-06-05,Withdrawal,-219.84,10694.26
+ACC-1016,Brian Ramirez,Active,June 2026,2026-06-25,Fee,-371.21,10694.26
+ACC-1016,Brian Ramirez,Active,June 2026,2026-06-20,Deposit,23.88,10694.26
+ACC-1016,Brian Ramirez,Active,June 2026,2026-06-03,Transfer,1494.18,10694.26
+ACC-1016,Brian Ramirez,Active,June 2026,2026-06-09,Transfer,327.6,10694.26
+ACC-1016,Brian Ramirez,Active,June 2026,2026-06-03,Withdrawal,-747.27,10694.26
+ACC-1017,Holly Wood,Active,June 2026,2026-06-23,Interest Credit,1252.28,7705.78
+ACC-1017,Holly Wood,Active,June 2026,2026-06-26,Fee,-493.23,7705.78
+ACC-1017,Holly Wood,Active,June 2026,2026-06-27,Transfer,21.66,7705.78
+ACC-1017,Holly Wood,Active,June 2026,2026-06-22,Transfer,456.07,7705.78
+ACC-1017,Holly Wood,Active,June 2026,2026-06-05,Deposit,1409.01,7705.78
+ACC-1018,Derek Zuniga,Active,June 2026,2026-06-07,Fee,-232.59,17849.4
+ACC-1018,Derek Zuniga,Active,June 2026,2026-06-21,Fee,-170.84,17849.4
+ACC-1018,Derek Zuniga,Active,June 2026,2026-06-09,Fee,-409.27,17849.4
+ACC-1018,Derek Zuniga,Active,June 2026,2026-06-14,Deposit,147.52,17849.4
+ACC-1018,Derek Zuniga,Active,June 2026,2026-06-11,Fee,-44.83,17849.4
+ACC-1019,Lisa Jackson,Active,June 2026,2026-06-18,Withdrawal,-595.57,12923.71
+ACC-1019,Lisa Jackson,Active,June 2026,2026-06-04,Interest Credit,845.75,12923.71
+ACC-1019,Lisa Jackson,Active,June 2026,2026-06-23,Deposit,1418.13,12923.71
+ACC-1019,Lisa Jackson,Active,June 2026,2026-06-27,Withdrawal,-441.02,12923.71
+ACC-1019,Lisa Jackson,Active,June 2026,2026-06-05,Fee,-470.18,12923.71
+ACC-1019,Lisa Jackson,Active,June 2026,2026-06-10,Interest Credit,199.89,12923.71
+ACC-1019,Lisa Jackson,Active,June 2026,2026-06-26,Fee,-720.2,12923.71
+ACC-1020,Carla Gray,Active,June 2026,2026-06-22,Withdrawal,-548.83,1277.95
+ACC-1020,Carla Gray,Active,June 2026,2026-06-18,Deposit,536.98,1277.95
+ACC-1020,Carla Gray,Active,June 2026,2026-06-24,Interest Credit,1461.02,1277.95
+ACC-1020,Carla Gray,Active,June 2026,2026-06-08,Withdrawal,-741.35,1277.95
+ACC-1020,Carla Gray,Active,June 2026,2026-06-26,Withdrawal,-781.2,1277.95
+ACC-1020,Carla Gray,Active,June 2026,2026-06-01,Withdrawal,-706.32,1277.95
+ACC-1020,Carla Gray,Active,June 2026,2026-06-11,Withdrawal,-591.89,1277.95
+ACC-1020,Carla Gray,Active,June 2026,2026-06-28,Interest Credit,1205.33,1277.95
+ACC-1021,Margaret Hawkins DDS,Active,June 2026,2026-06-02,Deposit,579.99,5339.26
+ACC-1021,Margaret Hawkins DDS,Active,June 2026,2026-06-27,Interest Credit,341.43,5339.26
+ACC-1021,Margaret Hawkins DDS,Active,June 2026,2026-06-27,Interest Credit,530.99,5339.26
+ACC-1021,Margaret Hawkins DDS,Active,June 2026,2026-06-22,Withdrawal,-186.11,5339.26
+ACC-1021,Margaret Hawkins DDS,Active,June 2026,2026-06-09,Withdrawal,-324.79,5339.26
+ACC-1022,Patty Perez,Active,June 2026,2026-06-13,Fee,-516.77,19354.34
+ACC-1022,Patty Perez,Active,June 2026,2026-06-01,Transfer,503.41,19354.34
+ACC-1022,Patty Perez,Active,June 2026,2026-06-09,Deposit,1316.79,19354.34
+ACC-1022,Patty Perez,Active,June 2026,2026-06-09,Withdrawal,-468.67,19354.34
+ACC-1022,Patty Perez,Active,June 2026,2026-06-14,Deposit,171.52,19354.34
+ACC-1022,Patty Perez,Active,June 2026,2026-06-11,Fee,-585.55,19354.34
+ACC-1022,Patty Perez,Active,June 2026,2026-06-17,Interest Credit,913.25,19354.34
+ACC-1023,Ethan Adams,Closed,June 2026,,,,18040.34
+ACC-1024,Tommy Walter,Active,June 2026,2026-06-26,Deposit,784.68,1365.54
+ACC-1024,Tommy Walter,Active,June 2026,2026-06-24,Transfer,1033.42,1365.54
+ACC-1024,Tommy Walter,Active,June 2026,2026-06-03,Withdrawal,-297.73,1365.54
+ACC-1024,Tommy Walter,Active,June 2026,2026-06-22,Fee,-502.29,1365.54
+ACC-1024,Tommy Walter,Active,June 2026,2026-06-10,Deposit,1082.43,1365.54
+ACC-1024,Tommy Walter,Active,June 2026,2026-06-14,Transfer,470.83,1365.54
+ACC-1024,Tommy Walter,Active,June 2026,2026-06-10,Fee,-327.9,1365.54
+ACC-1024,Tommy Walter,Active,June 2026,2026-06-14,Transfer,199.66,1365.54
+ACC-1024,Tommy Walter,Active,June 2026,2026-06-06,Interest Credit,1019.2,1365.54
+ACC-1025,Matthew Foster,Active,June 2026,2026-06-14,Fee,-236.66,6368.52
+ACC-1025,Matthew Foster,Active,June 2026,2026-06-11,Transfer,913.93,6368.52
+ACC-1025,Matthew Foster,Active,June 2026,2026-06-22,Interest Credit,668.26,6368.52
